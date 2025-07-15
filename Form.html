@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JourneyVista - Travel Quiz</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow-y: auto;
+      font-family: Arial, sans-serif;
+      /*background: url('/Users/hariniemmadi/Desktop/Projects/JourneyVista/JourneyVista/static/formbackground.jpg') no-repeat center center fixed; */
+      background: url('static/formbackground.jpg') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+      box-sizing: border-box;
+    }
+
+    .form-container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+      max-width: 600px;
+      width: 90%;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #444;
+    }
+
+    select,
+    input[type="text"],
+    input[type="month"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #aaa;
+      border-radius: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    input[type="radio"],
+    input[type="checkbox"] {
+      margin-right: 5px;
+    }
+
+    button {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background-color: #009688;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00796b;
+    }
+
+    #results {
+      margin-top: 25px;
+      background-color: #f0f8f5;
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    }
+
+    #results h3 {
+      margin-top: 0;
+      color: #00796b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container" id="formBox">
+      <!-- ✅ keep as <form> but override submit behavior -->
+      <form id="travelForm">
+        <h2>Discover Your Dream Destination</h2>
+
+        <label for="interest">What interests you most while traveling?</label>
+        <select id="interest" name="interest" required>
+          <option value="">--Select--</option>
+          <option value="adventure">Adventure</option>
+          <option value="relaxation">Relaxation</option>
+          <option value="culture">Culture & Heritage</option>
+          <option value="spirituality">Spirituality</option>
+          <option value="food">Food Exploration</option>
+          <option value="offbeat">Offbeat/Hidden Gems</option>
+        </select>
+
+        <label for="scenery">Preferred Scenery</label>
+        <select id="scenery" name="scenery" required>
+          <option value="">--Select--</option>
+          <option value="mountains">Mountains</option>
+          <option value="beaches">Beaches</option>
+          <option value="forest">Forest</option>
+          <option value="desert">Desert</option>
+          <option value="city">Urban Cityscape</option>
+        </select>
+
+        <label for="vibe">What kind of vibe are you looking for?</label>
+        <select id="vibe" name="vibe" required>
+          <option value="">--Select--</option>
+          <option value="chill">Chill & Laid Back</option>
+          <option value="party">Party & Nightlife</option>
+          <option value="spiritual">Spiritual</option>
+          <option value="wild">Wild & Adventurous</option>
+        </select>
+
+        <label>What’s your budget?</label>
+        <input type="radio" name="budget" value="economy" required> Economy<br>
+        <input type="radio" name="budget" value="midrange"> Mid-range<br>
+        <input type="radio" name="budget" value="luxury"> Luxury<br>
+
+        <label for="travelDate">When do you plan to travel?</label>
+        <input type="month" id="travelDate" name="travelDate" required>
+
+        <label>What activities do you enjoy?</label>
+        <input type="checkbox" name="activities" value="trekking"> Trekking<br>
+        <input type="checkbox" name="activities" value="boating"> Boating<br>
+        <input type="checkbox" name="activities" value="heritage"> Heritage Tours<br>
+        <input type="checkbox" name="activities" value="wildlife"> Wildlife Safari<br>
+        <input type="checkbox" name="activities" value="streetfood"> Street Food<br>
+        <input type="checkbox" name="activities" value="shopping"> Shopping<br>
+
+        <label for="notes">Anything else you want us to consider?</label>
+        <textarea id="notes" name="notes" rows="3"></textarea>
+
+        <button type="submit" id="submitBtn">Submit Preferences</button>
+      </form>
+
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("travelForm");
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault(); // ✅ Prevent page reload
+
+        const formData = new FormData(form);
+
+        const data = {
+          interest: formData.get("interest"),
+          scenery: formData.get("scenery"),
+          vibe: formData.get("vibe"),
+          budget: formData.get("budget"),
+          travelDate: formData.get("travelDate"),
+          notes: formData.get("notes"),
+          activities: formData.getAll("activities"),
+        };
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/submit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await response.json();
+          const resultDiv = document.getElementById("results");
+
+          if (result.suggestions && result.suggestions.length > 0) {
+            resultDiv.innerHTML = `
+              <h3>Recommended Destinations:</h3>
+              <ul>${result.suggestions.map(p => `<li>${p}</li>`).join("")}</ul>
+            `;
+          } else {
+            resultDiv.innerHTML = `<p>No suggestions found. Try different preferences.</p>`;
+          }
+        } catch (error) {
+          console.error("Error submitting form:", error);
+          document.getElementById("results").innerHTML =
+            "<p style='color:red;'>An error occurred. Please try again later.</p>";
+        }
+      });
+    });
+  </script>
+  </body>
+  </html>
